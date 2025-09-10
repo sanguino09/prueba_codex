@@ -4,6 +4,7 @@ const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = new Sequelize({
   dialect: 'sqlite',
   storage: 'database.sqlite',
+  logging: false,
 });
 
 // User model
@@ -13,7 +14,7 @@ const User = sequelize.define('User', {
     allowNull: false,
     unique: true,
   },
-  password: {
+  password_hash: {
     type: DataTypes.STRING,
     allowNull: false,
   },
@@ -21,14 +22,6 @@ const User = sequelize.define('User', {
 
 // Trip model
 const Trip = sequelize.define('Trip', {
-  user_id: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: User,
-      key: 'id',
-    },
-  },
   country_code: {
     type: DataTypes.STRING,
     allowNull: false,

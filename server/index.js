@@ -1,46 +1,12 @@
+require('dotenv').config();
 const express = require('express');
-const { sequelize, User } = require('./models');
-const { addTrip, getTrips } = require('./controllers/tripsController');
+const { sequelize, Trip } = require('./models');
 const { register, login, verifyToken } = require('./auth');
 
 const app = express();
 app.use(express.json());
+app.use(express.static('public'));
 
-// Register user
-app.post('/api/register', async (req, res) => {
-  const { username, password } = req.body;
-  try {
-    const user = await User.create({ username, password });
-    res.json(user);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Login user
-app.post('/api/login', async (req, res) => {
-  const { username, password } = req.body;
-  try {
-    const user = await User.findOne({ where: { username, password } });
-    if (!user) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
-    res.json({ message: 'Login successful' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Trips routes
-app.post('/api/trips', addTrip);
-app.get('/api/trips', getTrips);
-
-const PORT = process.env.PORT || 3000;
-sequelize.sync().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Server listening on port ${PORT}`);
-  });
-});
 app.post('/api/register', async (req, res) => {
   const { username, password } = req.body;
   try {
@@ -61,18 +27,30 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-const trips = [
-  { id: 1, destination: 'Paris' },
-  { id: 2, destination: 'Tokyo' }
-];
+app.post('/api/trips', verifyToken, async (req, res) => {
+  const { country_code } = req.body;
+  try {
+    const trip = await Trip.create({ user_id: req.user.id, country_code });
+    res.status(201).json(trip);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
 
-app.get('/api/trips', verifyToken, (req, res) => {
-  res.json(trips);
+app.get('/api/trips', verifyToken, async (req, res) => {
+  try {
+    const trips = await Trip.findAll({ where: { user_id: req.user.id } });
+    res.json(trips);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+sequelize.sync().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
 });
 
 module.exports = app;
