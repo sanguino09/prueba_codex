@@ -1,121 +1,114 @@
-
-const map = L.map('map').setView([20, 0], 2);
-
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '&copy; OpenStreetMap contributors'
-}).addTo(map);
-
-const selectedCountries = [];
-
-function toggleCountry(e) {
-  const layer = e.target;
-  const code = layer.feature.properties.ISO_A3;
-  const index = selectedCountries.indexOf(code);
-
-  if (index === -1) {
-    selectedCountries.push(code);
-    layer.setStyle({ fillColor: '#3388ff', fillOpacity: 0.5 });
-  } else {
-    selectedCountries.splice(index, 1);
-    layer.setStyle({ fillOpacity: 0 });
-  }
-}
-
-function onEachFeature(feature, layer) {
-  layer.on({ click: toggleCountry });
-}
-
-fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
-  .then((res) => res.json())
-  .then((data) => {
-    L.geoJSON(data, {
-      style: {
-        color: '#555',
-        weight: 1,
-        fillOpacity: 0,
-      },
-      onEachFeature,
-    }).addTo(map);
-  })
-  .catch((err) => console.error('Error loading GeoJSON', err));
-
-// Expose the selected countries array for later use
-window.getSelectedCountries = () => selectedCountries.slice();
-
-document.addEventListener('DOMContentLoaded', () => {
-  initMap();
-  loadTrips();
-});
+let map;
+let geojsonLayer;
+let visited = new Set();
 
 function getToken() {
   return localStorage.getItem('token');
 }
 
-async function loadTrips() {
-  const token = getToken();
-  if (!token) {
-    showAuthError();
-    return;
-  }
-  try {
-    const resp = await fetch('/api/trips', {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
+function initMap() {
+  map = L.map('map').setView([20, 0], 2);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
+    .then(res => res.json())
+    .then(data => {
+      geojsonLayer = L.geoJSON(data, {
+        style: { color: '#555', weight: 1, fillOpacity: 0 },
+        onEachFeature: (feature, layer) => {
+          layer.on('click', onCountryClick);
+        }
+      }).addTo(map);
+      colorVisited();
     });
-    if (!resp.ok) {
-      if (resp.status === 401) showAuthError();
-      return;
-    }
-    const data = await resp.json();
-    const trips = Array.isArray(data.trips) ? data.trips : data;
-    if (Array.isArray(trips)) {
-      trips.forEach(colorCountry);
-    }
-  } catch (err) {
-    console.error('Failed to load trips', err);
-  }
 }
 
-function initMap() {
-  document.querySelectorAll('.country').forEach(el => {
-    el.addEventListener('click', () => selectCountry(el.dataset.code));
+function onCountryClick(e) {
+  const code = e.target.feature.properties.ISO_A3;
+  const token = getToken();
+  if (!token) {
+    alert('Debes iniciar sesión');
+    return;
+  }
+  fetch('/api/trips', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ country_code: code })
+  }).then(res => {
+    if (res.ok) {
+      visited.add(code);
+      e.target.setStyle({ fillColor: '#3388ff', fillOpacity: 0.5 });
+    } else if (res.status === 401) {
+      alert('Sesión inválida');
+    }
   });
 }
 
-async function selectCountry(country_code) {
-  const token = getToken();
-  if (!token) {
-    showAuthError();
-    return;
-  }
-  try {
-    const resp = await fetch('/api/trips', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ country_code })
-    });
-    if (!resp.ok) {
-      if (resp.status === 401) showAuthError();
-      return;
+function colorVisited() {
+  if (!geojsonLayer) return;
+  geojsonLayer.eachLayer(layer => {
+    const code = layer.feature.properties.ISO_A3;
+    if (visited.has(code)) {
+      layer.setStyle({ fillColor: '#3388ff', fillOpacity: 0.5 });
     }
-    colorCountry(country_code);
-  } catch (err) {
-    console.error('Failed to save trip', err);
-  }
+  });
 }
 
-function colorCountry(code) {
-  const el = document.querySelector(`[data-code="${code}"]`);
-  if (el) {
-    el.classList.add('visited');
-  }
+function loadTrips() {
+  const token = getToken();
+  if (!token) return;
+  fetch('/api/trips', {
+    headers: { 'Authorization': `Bearer ${token}` }
+  }).then(res => res.json())
+    .then(data => {
+      visited = new Set(data.map(t => t.country_code));
+      colorVisited();
+    })
+    .catch(() => {});
 }
 
-function showAuthError() {
-  alert('Tu sesión ha expirado o es inválida. Inicia sesión nuevamente.');
+function setupForms() {
+  const regForm = document.getElementById('registerForm');
+  const logForm = document.getElementById('loginForm');
+
+  regForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const username = document.getElementById('regUsername').value;
+    const password = document.getElementById('regPassword').value;
+    await fetch('/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    alert('Registrado');
+  });
+
+  logForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const username = document.getElementById('logUsername').value;
+    const password = document.getElementById('logPassword').value;
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      localStorage.setItem('token', data.token);
+      loadTrips();
+    } else {
+      alert('Error de autenticación');
+    }
+  });
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+  setupForms();
+  initMap();
+  loadTrips();
+});
