@@ -1,6 +1,6 @@
 let map;
 let geojsonLayer;
-let visited = new Set();
+let visited = new Map();
 
 function getToken() {
   return localStorage.getItem('token');
@@ -10,7 +10,14 @@ function getUsernameFromToken() {
   const token = getToken();
   if (!token) return null;
   try {
-    return JSON.parse(atob(token.split('.')[1])).username;
+    let payload = token.split('.')[1]
+      .replace(/-/g, '+')
+      .replace(/_/g, '/');
+    while (payload.length % 4) {
+      payload += '=';
+    }
+    const decoded = JSON.parse(atob(payload));
+    return decoded.username;
   } catch {
     return null;
   }
@@ -25,15 +32,24 @@ function showMessage(msg, isError = false) {
 function updateAuthUI() {
   const authContainer = document.getElementById('authContainer');
   const userInfo = document.getElementById('userInfo');
+  const mapDiv = document.getElementById('map');
   const usernameSpan = document.getElementById('username');
   const username = getUsernameFromToken();
   if (username) {
     authContainer.classList.add('hidden');
     userInfo.classList.remove('hidden');
+    mapDiv.classList.remove('hidden');
     usernameSpan.textContent = username;
+    if (!map) {
+      initMap();
+    } else {
+      map.invalidateSize();
+    }
+    loadTrips();
   } else {
     authContainer.classList.remove('hidden');
     userInfo.classList.add('hidden');
+    mapDiv.classList.add('hidden');
     usernameSpan.textContent = '';
   }
 }
@@ -64,17 +80,24 @@ function onCountryClick(e) {
     alert('Debes iniciar sesión');
     return;
   }
+  if (visited.has(code)) {
+    alert(`Ya visitado el ${visited.get(code)}`);
+    return;
+  }
+  const date = prompt('Fecha de visita (YYYY-MM-DD):');
+  if (!date) return;
   fetch('/api/trips', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
     },
-    body: JSON.stringify({ country_code: code })
+    body: JSON.stringify({ country_code: code, visited_at: date })
   }).then(res => {
     if (res.ok) {
-      visited.add(code);
+      visited.set(code, date);
       e.target.setStyle({ fillColor: '#3388ff', fillOpacity: 0.5 });
+      e.target.bindTooltip(date);
     } else if (res.status === 401) {
       alert('Sesión inválida');
     }
@@ -87,8 +110,10 @@ function colorVisited() {
     const code = layer.feature.properties.ISO_A3;
     if (visited.has(code)) {
       layer.setStyle({ fillColor: '#3388ff', fillOpacity: 0.5 });
+      layer.bindTooltip(visited.get(code));
     } else {
       layer.setStyle({ fillOpacity: 0 });
+      layer.unbindTooltip();
     }
   });
 }
@@ -100,7 +125,7 @@ function loadTrips() {
     headers: { 'Authorization': `Bearer ${token}` }
   }).then(res => res.json())
     .then(data => {
-      visited = new Set(data.map(t => t.country_code));
+      visited = new Map(data.map(t => [t.country_code, t.visited_at]));
       colorVisited();
     })
     .catch(() => {});
@@ -110,6 +135,22 @@ function setupForms() {
   const regForm = document.getElementById('registerForm');
   const logForm = document.getElementById('loginForm');
   const logoutBtn = document.getElementById('logoutBtn');
+  const loginToggle = document.getElementById('loginToggle');
+  const registerToggle = document.getElementById('registerToggle');
+
+  loginToggle.addEventListener('click', () => {
+    logForm.classList.remove('hidden');
+    regForm.classList.add('hidden');
+    loginToggle.classList.add('active');
+    registerToggle.classList.remove('active');
+  });
+
+  registerToggle.addEventListener('click', () => {
+    regForm.classList.remove('hidden');
+    logForm.classList.add('hidden');
+    registerToggle.classList.add('active');
+    loginToggle.classList.remove('active');
+  });
 
   regForm.addEventListener('submit', async e => {
     e.preventDefault();
@@ -143,7 +184,6 @@ function setupForms() {
       showMessage('Sesión iniciada');
       logForm.reset();
       updateAuthUI();
-      loadTrips();
     } else {
       showMessage('Error de autenticación', true);
     }
@@ -160,7 +200,5 @@ function setupForms() {
 
 document.addEventListener('DOMContentLoaded', () => {
   setupForms();
-  initMap();
   updateAuthUI();
-  loadTrips();
 });
