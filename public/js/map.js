@@ -6,6 +6,38 @@ function getToken() {
   return localStorage.getItem('token');
 }
 
+function getUsernameFromToken() {
+  const token = getToken();
+  if (!token) return null;
+  try {
+    return JSON.parse(atob(token.split('.')[1])).username;
+  } catch {
+    return null;
+  }
+}
+
+function showMessage(msg, isError = false) {
+  const div = document.getElementById('message');
+  div.textContent = msg;
+  div.style.color = isError ? 'red' : 'green';
+}
+
+function updateAuthUI() {
+  const authContainer = document.getElementById('authContainer');
+  const userInfo = document.getElementById('userInfo');
+  const usernameSpan = document.getElementById('username');
+  const username = getUsernameFromToken();
+  if (username) {
+    authContainer.classList.add('hidden');
+    userInfo.classList.remove('hidden');
+    usernameSpan.textContent = username;
+  } else {
+    authContainer.classList.remove('hidden');
+    userInfo.classList.add('hidden');
+    usernameSpan.textContent = '';
+  }
+}
+
 function initMap() {
   map = L.map('map').setView([20, 0], 2);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -55,6 +87,8 @@ function colorVisited() {
     const code = layer.feature.properties.ISO_A3;
     if (visited.has(code)) {
       layer.setStyle({ fillColor: '#3388ff', fillOpacity: 0.5 });
+    } else {
+      layer.setStyle({ fillOpacity: 0 });
     }
   });
 }
@@ -75,17 +109,23 @@ function loadTrips() {
 function setupForms() {
   const regForm = document.getElementById('registerForm');
   const logForm = document.getElementById('loginForm');
+  const logoutBtn = document.getElementById('logoutBtn');
 
   regForm.addEventListener('submit', async e => {
     e.preventDefault();
     const username = document.getElementById('regUsername').value;
     const password = document.getElementById('regPassword').value;
-    await fetch('/api/register', {
+    const res = await fetch('/api/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password })
     });
-    alert('Registrado');
+    if (res.ok) {
+      showMessage('Usuario registrado, ahora puedes iniciar sesión');
+      regForm.reset();
+    } else {
+      showMessage('Error al registrar', true);
+    }
   });
 
   logForm.addEventListener('submit', async e => {
@@ -100,15 +140,27 @@ function setupForms() {
     if (res.ok) {
       const data = await res.json();
       localStorage.setItem('token', data.token);
+      showMessage('Sesión iniciada');
+      logForm.reset();
+      updateAuthUI();
       loadTrips();
     } else {
-      alert('Error de autenticación');
+      showMessage('Error de autenticación', true);
     }
+  });
+
+  logoutBtn.addEventListener('click', () => {
+    localStorage.removeItem('token');
+    visited.clear();
+    colorVisited();
+    showMessage('Sesión cerrada');
+    updateAuthUI();
   });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   setupForms();
   initMap();
+  updateAuthUI();
   loadTrips();
 });
