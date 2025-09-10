@@ -55,12 +55,9 @@ function updateAuthUI() {
 }
 
 function initMap() {
-  map = L.map('map').setView([20, 0], 2);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(map);
+  map = L.map('map');
 
-  fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
+  fetch('data/countries.geojson')
     .then(res => res.json())
     .then(data => {
       geojsonLayer = L.geoJSON(data, {
@@ -69,6 +66,7 @@ function initMap() {
           layer.on('click', onCountryClick);
         }
       }).addTo(map);
+      map.fitBounds(geojsonLayer.getBounds());
       colorVisited();
     });
 }
