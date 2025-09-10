@@ -11,17 +11,19 @@
   <h1>Mis Viajes</h1>
   <div id="auth">
     <div id="authContainer">
-      <form id="registerForm">
-        <h2>Registrarse</h2>
-        <input type="text" id="regUsername" placeholder="Usuario" required />
-        <input type="password" id="regPassword" placeholder="Contraseña" required />
-        <button type="submit">Registrarse</button>
-      </form>
+      <div id="authSwitch">
+        <button id="loginToggle" class="active">Iniciar sesión</button>
+        <button id="registerToggle">Registrarse</button>
+      </div>
       <form id="loginForm">
-        <h2>Iniciar sesión</h2>
         <input type="text" id="logUsername" placeholder="Usuario" required />
         <input type="password" id="logPassword" placeholder="Contraseña" required />
         <button type="submit">Iniciar sesión</button>
+      </form>
+      <form id="registerForm" class="hidden">
+        <input type="text" id="regUsername" placeholder="Usuario" required />
+        <input type="password" id="regPassword" placeholder="Contraseña" required />
+        <button type="submit">Registrarse</button>
       </form>
     </div>
     <div id="userInfo" class="hidden">
