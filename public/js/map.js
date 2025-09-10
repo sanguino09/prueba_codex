@@ -10,7 +10,14 @@ function getUsernameFromToken() {
   const token = getToken();
   if (!token) return null;
   try {
-    return JSON.parse(atob(token.split('.')[1])).username;
+    let payload = token.split('.')[1]
+      .replace(/-/g, '+')
+      .replace(/_/g, '/');
+    while (payload.length % 4) {
+      payload += '=';
+    }
+    const decoded = JSON.parse(atob(payload));
+    return decoded.username;
   } catch {
     return null;
   }
