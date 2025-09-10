@@ -26,6 +26,10 @@ const Trip = sequelize.define('Trip', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  visited_at: {
+    type: DataTypes.DATEONLY,
+    allowNull: false,
+  },
 });
 
 User.hasMany(Trip, { foreignKey: 'user_id' });
