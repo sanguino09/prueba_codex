@@ -1,8 +1,9 @@
+require('dotenv').config();
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const { User } = require('./models');
 
-const SECRET_KEY = process.env.JWT_SECRET || 'secretkey';
+const SECRET_KEY = process.env.JWT_SECRET;
 
 function hashPassword(password) {
   return crypto.createHash('sha256').update(password).digest('hex');
