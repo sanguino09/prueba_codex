@@ -25,15 +25,24 @@ function showMessage(msg, isError = false) {
 function updateAuthUI() {
   const authContainer = document.getElementById('authContainer');
   const userInfo = document.getElementById('userInfo');
+  const mapDiv = document.getElementById('map');
   const usernameSpan = document.getElementById('username');
   const username = getUsernameFromToken();
   if (username) {
     authContainer.classList.add('hidden');
     userInfo.classList.remove('hidden');
+    mapDiv.classList.remove('hidden');
     usernameSpan.textContent = username;
+    if (!map) {
+      initMap();
+    } else {
+      map.invalidateSize();
+    }
+    loadTrips();
   } else {
     authContainer.classList.remove('hidden');
     userInfo.classList.add('hidden');
+    mapDiv.classList.add('hidden');
     usernameSpan.textContent = '';
   }
 }
@@ -168,7 +177,6 @@ function setupForms() {
       showMessage('Sesión iniciada');
       logForm.reset();
       updateAuthUI();
-      loadTrips();
     } else {
       showMessage('Error de autenticación', true);
     }
@@ -185,7 +193,5 @@ function setupForms() {
 
 document.addEventListener('DOMContentLoaded', () => {
   setupForms();
-  initMap();
   updateAuthUI();
-  loadTrips();
 });
