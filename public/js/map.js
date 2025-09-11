@@ -194,7 +194,9 @@ function setupForms() {
         addTripBtn.classList.remove('active');
         addTripBtn.textContent = '+';
       } else if (res.status === 401) {
+
         showMessage('Sesión inválida', true);
+
         localStorage.removeItem('token');
         updateAuthUI();
       } else {
