@@ -170,7 +170,7 @@ function setupForms() {
     colorVisited();
   });
 
-  saveDateBtn.addEventListener('click', () => {
+  saveDateBtn.addEventListener('click', async () => {
     const date = visitDateInput.value;
     if (!pendingCode || !date) {
       dateModal.classList.add('hidden');
@@ -178,14 +178,15 @@ function setupForms() {
       return;
     }
     const token = getToken();
-    fetch('/api/trips', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ country_code: pendingCode, visited_at: date })
-    }).then(res => {
+    try {
+      const res = await fetch('/api/trips', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ country_code: pendingCode, visited_at: date })
+      });
       if (res.ok) {
         visited.set(pendingCode, date);
         colorVisited();
@@ -193,16 +194,21 @@ function setupForms() {
         addTripBtn.classList.remove('active');
         addTripBtn.textContent = '+';
       } else if (res.status === 401) {
-        alert('Sesión inválida');
+
+        showMessage('Sesión inválida', true);
+
         localStorage.removeItem('token');
         updateAuthUI();
       } else {
-        alert('Error al guardar');
+        const data = await res.json().catch(() => ({}));
+        showMessage(data.error || 'Error al guardar', true);
       }
-    }).finally(() => {
+    } catch {
+      showMessage('Error al guardar', true);
+    } finally {
       dateModal.classList.add('hidden');
       pendingCode = null;
-    });
+    }
   });
 
   cancelDateBtn.addEventListener('click', () => {
