@@ -7,41 +7,39 @@ const { register, login, verifyToken } = require('./auth');
 const app = express();
 app.use(express.json());
 
+// Router para endpoints de la API
+const api = express.Router();
 
-app
-  .route('/api/register')
-  .post(async (req, res) => {
-    const { username, password } = req.body;
-    if (!username || !password) {
-      return res.status(400).json({ error: 'Faltan datos' });
-    }
-    try {
-      const user = await register(username, password);
-      res.status(201).json(user);
-    } catch (err) {
-      res.status(400).json({ error: err.message });
-    }
-  })
-  .all((req, res) => res.status(405).json({ error: 'Método no permitido' }));
+// Registro de usuarios
+api.post('/register', async (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Faltan datos' });
+  }
+  try {
+    const user = await register(username, password);
+    res.status(201).json(user);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
 
-app
-  .route('/api/login')
-  .post(async (req, res) => {
-    const { username, password } = req.body;
-    if (!username || !password) {
-      return res.status(400).json({ error: 'Faltan datos' });
-    }
-    try {
-      const token = await login(username, password);
-      res.json({ token });
-    } catch (err) {
-      res.status(401).json({ error: 'Credenciales inválidas' });
-    }
-  })
-  .all((req, res) => res.status(405).json({ error: 'Método no permitido' }));
+// Inicio de sesión
+api.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Faltan datos' });
+  }
+  try {
+    const token = await login(username, password);
+    res.json({ token });
+  } catch (err) {
+    res.status(401).json({ error: 'Credenciales inválidas' });
+  }
+});
 
-
-app.post('/api/trips', verifyToken, async (req, res) => {
+// Rutas protegidas de viajes
+api.post('/trips', verifyToken, async (req, res) => {
   const { country_code, visited_at } = req.body;
   const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
   if (!country_code || !dateRegex.test(visited_at)) {
@@ -55,7 +53,7 @@ app.post('/api/trips', verifyToken, async (req, res) => {
   }
 });
 
-app.get('/api/trips', verifyToken, async (req, res) => {
+api.get('/trips', verifyToken, async (req, res) => {
   try {
     const trips = await Trip.findAll({ where: { user_id: req.user.id } });
     res.json(trips);
@@ -64,13 +62,15 @@ app.get('/api/trips', verifyToken, async (req, res) => {
   }
 });
 
-
-// Return JSON 404 for unknown API routes
-app.use('/api', (req, res) => {
+// 404 para rutas no existentes dentro de /api
+api.use((req, res) => {
   res.status(404).json({ error: 'Ruta no encontrada' });
 });
 
-// Serve static files after API routes so they don't override /api paths
+// Montar el router bajo /api
+app.use('/api', api);
+
+// Servir archivos estáticos
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 
