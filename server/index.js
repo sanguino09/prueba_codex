@@ -75,10 +75,18 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 
 
 const PORT = process.env.PORT || 3000;
-sequelize.sync().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+sequelize
+  // Ensure database schema stays in sync with the models, adding any new
+  // columns (e.g. `visited_at` in `Trip`) without requiring a manual migration
+  // or deleting existing data.
+  .sync({ alter: true })
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  })
+  .catch(err => {
+    console.error('Failed to sync database:', err);
   });
-});
 
 module.exports = app;
