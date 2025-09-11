@@ -1,3 +1,4 @@
+
 html, body {
   height: 100%;
 }
@@ -10,6 +11,7 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+
 }
 
 #auth {
@@ -115,6 +117,49 @@ body {
 #addTripBtn {
   position: fixed;
   bottom: 70px;
+  right: 20px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #3388ff;
+  color: #fff;
+  font-size: 24px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+#addTripBtn.active {
+  background: #1d6fe0;
+}
+
+#navbar {
+  width: 100%;
+  background: #3388ff;
+  color: #fff;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+}
+
+#navbar .brand {
+  font-weight: bold;
+}
+
+#navbar .spacer {
+  flex: 1;
+}
+
+#navbar #logoutBtn {
+  margin-left: 10px;
+}
+
+#addTripBtn {
+  position: fixed;
+  bottom: 20px;
   right: 20px;
   width: 48px;
   height: 48px;
