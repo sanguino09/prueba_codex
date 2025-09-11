@@ -29,11 +29,15 @@ app.post('/api/login', async (req, res) => {
 
 app.post('/api/trips', verifyToken, async (req, res) => {
   const { country_code, visited_at } = req.body;
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!country_code || !dateRegex.test(visited_at)) {
+    return res.status(400).json({ error: 'Datos inválidos' });
+  }
   try {
     const trip = await Trip.create({ user_id: req.user.id, country_code, visited_at });
     res.status(201).json(trip);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
 
