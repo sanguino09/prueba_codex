@@ -132,7 +132,15 @@ function loadTrips() {
   if (!token) return;
   fetch('/api/trips', {
     headers: { 'Authorization': `Bearer ${token}` }
-  }).then(res => res.json())
+  }).then(res => {
+    if (res.status === 401) {
+      localStorage.removeItem('token');
+      showMessage('Sesión inválida', true);
+      updateAuthUI();
+      return [];
+    }
+    return res.json();
+  })
     .then(data => {
       visited = new Map(data.map(t => [t.country_code, t.visited_at]));
       colorVisited();
@@ -186,6 +194,8 @@ function setupForms() {
         addTripBtn.textContent = '+';
       } else if (res.status === 401) {
         alert('Sesión inválida');
+        localStorage.removeItem('token');
+        updateAuthUI();
       } else {
         alert('Error al guardar');
       }
