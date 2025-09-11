@@ -8,6 +8,7 @@
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
   />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -15,8 +16,14 @@
     <span class="brand">Mis Viajes</span>
     <span class="spacer"></span>
     <span id="username"></span>
-    <button id="logoutBtn">Cerrar sesión</button>
+    <button id="menuBtn" class="icon-button"><span class="material-icons">menu</span></button>
+    <div id="menuDropdown" class="hidden">
+      <button id="logoutOption" class="menu-item"><span class="material-icons">logout</span>Cerrar sesión</button>
+      <button id="settingsOption" class="menu-item"><span class="material-icons">settings</span>Ajustes</button>
+      <button id="helpOption" class="menu-item"><span class="material-icons">help_outline</span>Cómo funciona</button>
+    </div>
   </nav>
+  <div id="message"></div>
   <div id="auth">
     <div id="authContainer">
       <div id="authSwitch">
@@ -34,10 +41,9 @@
         <button type="submit">Registrarse</button>
       </form>
     </div>
-    <div id="message"></div>
   </div>
   <div id="map" class="hidden"></div>
-  <button id="addTripBtn" class="hidden">+</button>
+  <button id="addTripBtn" class="hidden"><span class="material-icons">add</span></button>
 
   <div id="dateModal" class="hidden">
     <div class="modal-content">
