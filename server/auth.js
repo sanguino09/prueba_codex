@@ -3,7 +3,10 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const { User } = require('./models');
 
-const SECRET_KEY = process.env.JWT_SECRET;
+// Fallback to a default secret so authentication works even if the
+// environment variable isn't configured. This is primarily useful for
+// ephemeral environments like Vercel previews.
+const SECRET_KEY = process.env.JWT_SECRET || 'default-secret';
 
 function hashPassword(password) {
   return crypto.createHash('sha256').update(password).digest('hex');
