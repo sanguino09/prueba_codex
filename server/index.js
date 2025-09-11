@@ -7,6 +7,7 @@ const { register, login, verifyToken } = require('./auth');
 const app = express();
 app.use(express.json());
 
+
 app
   .route('/api/register')
   .post(async (req, res) => {
@@ -39,6 +40,7 @@ app
   })
   .all((req, res) => res.status(405).json({ error: 'Método no permitido' }));
 
+
 app.post('/api/trips', verifyToken, async (req, res) => {
   const { country_code, visited_at } = req.body;
   const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
@@ -62,6 +64,7 @@ app.get('/api/trips', verifyToken, async (req, res) => {
   }
 });
 
+
 // Return JSON 404 for unknown API routes
 app.use('/api', (req, res) => {
   res.status(404).json({ error: 'Ruta no encontrada' });
@@ -69,6 +72,7 @@ app.use('/api', (req, res) => {
 
 // Serve static files after API routes so they don't override /api paths
 app.use(express.static(path.join(__dirname, '..', 'public')));
+
 
 const PORT = process.env.PORT || 3000;
 sequelize.sync().then(() => {
