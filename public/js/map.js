@@ -1,6 +1,8 @@
 let map;
 let geojsonLayer;
 let visited = new Map();
+let addingMode = false;
+let addTripBtn;
 
 function getToken() {
   return localStorage.getItem('token');
@@ -30,29 +32,31 @@ function showMessage(msg, isError = false) {
 }
 
 function updateAuthUI() {
-  const authContainer = document.getElementById('authContainer');
-  const userInfo = document.getElementById('userInfo');
+  const auth = document.getElementById('auth');
+  const navbar = document.getElementById('navbar');
   const mapDiv = document.getElementById('map');
   const usernameSpan = document.getElementById('username');
   const username = getUsernameFromToken();
   if (username) {
-    authContainer.classList.add('hidden');
-    userInfo.classList.remove('hidden');
+    auth.classList.add('hidden');
+    navbar.classList.remove('hidden');
     mapDiv.classList.remove('hidden');
+    addTripBtn.classList.remove('hidden');
     usernameSpan.textContent = username;
     if (!map) {
       initMap();
     }
-    // Leaflet needs a size recalculation after the map container becomes
-    // visible; delaying the call ensures the browser has rendered the
-    // element before Leaflet measures it.
     setTimeout(() => map.invalidateSize(), 0);
     loadTrips();
   } else {
-    authContainer.classList.remove('hidden');
-    userInfo.classList.add('hidden');
+    auth.classList.remove('hidden');
+    navbar.classList.add('hidden');
     mapDiv.classList.add('hidden');
+    addTripBtn.classList.add('hidden');
     usernameSpan.textContent = '';
+    addingMode = false;
+    addTripBtn.classList.remove('active');
+    addTripBtn.textContent = '+';
   }
 }
 
@@ -80,6 +84,7 @@ function initMap() {
 }
 
 function onCountryClick(e) {
+  if (!addingMode) return;
   const code = e.target.feature.properties.ISO_A3;
   const token = getToken();
   if (!token) {
@@ -102,8 +107,11 @@ function onCountryClick(e) {
   }).then(res => {
     if (res.ok) {
       visited.set(code, date);
-      e.target.setStyle({ fillColor: '#3388ff', fillOpacity: 0.5 });
-      e.target.bindTooltip(date);
+      colorVisited();
+      addingMode = false;
+      addTripBtn.classList.remove('active');
+      addTripBtn.textContent = '+';
+      loadTrips();
     } else if (res.status === 401) {
       alert('Sesión inválida');
     }
@@ -143,6 +151,13 @@ function setupForms() {
   const logoutBtn = document.getElementById('logoutBtn');
   const loginToggle = document.getElementById('loginToggle');
   const registerToggle = document.getElementById('registerToggle');
+  addTripBtn = document.getElementById('addTripBtn');
+
+  addTripBtn.addEventListener('click', () => {
+    addingMode = !addingMode;
+    addTripBtn.classList.toggle('active', addingMode);
+    addTripBtn.textContent = addingMode ? '×' : '+';
+  });
 
   loginToggle.addEventListener('click', () => {
     logForm.classList.remove('hidden');

@@ -11,7 +11,12 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <h1>Mis Viajes</h1>
+  <nav id="navbar" class="hidden">
+    <span class="brand">Mis Viajes</span>
+    <span class="spacer"></span>
+    <span id="username"></span>
+    <button id="logoutBtn">Cerrar sesión</button>
+  </nav>
   <div id="auth">
     <div id="authContainer">
       <div id="authSwitch">
@@ -29,13 +34,10 @@
         <button type="submit">Registrarse</button>
       </form>
     </div>
-    <div id="userInfo" class="hidden">
-      Bienvenido, <span id="username"></span>
-      <button id="logoutBtn">Cerrar sesión</button>
-    </div>
     <div id="message"></div>
   </div>
   <div id="map" class="hidden"></div>
+  <button id="addTripBtn" class="hidden">+</button>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
