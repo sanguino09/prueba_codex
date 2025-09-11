@@ -3,6 +3,7 @@ let geojsonLayer;
 let visited = new Map();
 let addingMode = false;
 let addTripBtn;
+
 let dateModal;
 let visitDateInput;
 let saveDateBtn;
@@ -66,6 +67,7 @@ function updateAuthUI() {
     if (dateModal) {
       dateModal.classList.add('hidden');
     }
+
   }
 }
 
@@ -104,9 +106,11 @@ function onCountryClick(e) {
     alert(`Ya visitado el ${visited.get(code)}`);
     return;
   }
+
   pendingCode = code;
   visitDateInput.value = '';
   dateModal.classList.remove('hidden');
+
 }
 
 function colorVisited() {
@@ -143,15 +147,18 @@ function setupForms() {
   const loginToggle = document.getElementById('loginToggle');
   const registerToggle = document.getElementById('registerToggle');
   addTripBtn = document.getElementById('addTripBtn');
+
   dateModal = document.getElementById('dateModal');
   visitDateInput = document.getElementById('visitDate');
   saveDateBtn = document.getElementById('saveDateBtn');
   cancelDateBtn = document.getElementById('cancelDateBtn');
 
+
   addTripBtn.addEventListener('click', () => {
     addingMode = !addingMode;
     addTripBtn.classList.toggle('active', addingMode);
     addTripBtn.textContent = addingMode ? '×' : '+';
+
     colorVisited();
   });
 
@@ -191,6 +198,7 @@ function setupForms() {
   cancelDateBtn.addEventListener('click', () => {
     dateModal.classList.add('hidden');
     pendingCode = null;
+
   });
 
   loginToggle.addEventListener('click', () => {
