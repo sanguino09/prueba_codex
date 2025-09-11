@@ -5,10 +5,12 @@ const { register, login, verifyToken } = require('./auth');
 
 const app = express();
 app.use(express.json());
-app.use(express.static('public'));
 
 app.post('/api/register', async (req, res) => {
   const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Faltan datos' });
+  }
   try {
     const user = await register(username, password);
     res.status(201).json(user);
@@ -19,6 +21,9 @@ app.post('/api/register', async (req, res) => {
 
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Faltan datos' });
+  }
   try {
     const token = await login(username, password);
     res.json({ token });
@@ -49,6 +54,9 @@ app.get('/api/trips', verifyToken, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// Serve static files after API routes so they don't override /api paths
+app.use(express.static('public'));
 
 const PORT = process.env.PORT || 3000;
 sequelize.sync().then(() => {
