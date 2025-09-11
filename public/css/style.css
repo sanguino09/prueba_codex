@@ -3,11 +3,20 @@ html, body {
   height: 100%;
 }
 
+:root {
+  --primary: #2563eb;
+  --primary-hover: #1e4db7;
+  --background: #f5f7fa;
+  --surface: #ffffff;
+  --text: #1f2937;
+}
+
 body {
-  font-family: Arial, sans-serif;
+  font-family: "Segoe UI", Tahoma, sans-serif;
   margin: 0;
   padding: 0;
-  background: #f0f2f5;
+  background: var(--background);
+  color: var(--text);
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -39,15 +48,16 @@ body {
   padding: 8px 12px;
   cursor: pointer;
   border-radius: 4px;
+  transition: background 0.2s;
 }
 
 #authSwitch button.active {
-  background: #3388ff;
+  background: var(--primary);
   color: #fff;
 }
 
 #authContainer form {
-  background: #fff;
+  background: var(--surface);
   padding: 15px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -61,21 +71,26 @@ body {
   padding: 8px;
   width: 100%;
   box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
 #authContainer form button,
 #logoutBtn {
-  background: #3388ff;
+  background: var(--primary);
   color: #fff;
   border: none;
   padding: 8px 12px;
   border-radius: 4px;
   cursor: pointer;
+  transition: background 0.2s;
 }
 
 #authContainer form button:hover,
 #logoutBtn:hover {
-  background: #1d6fe0;
+
+  background: var(--primary-hover);
+
 }
 
 .hidden {
@@ -94,13 +109,20 @@ body {
 }
 
 #navbar {
+
   width: 100%;
-  background: #3388ff;
+  background: var(--primary);
   color: #fff;
-  padding: 10px;
+  padding: 10px 20px;
   display: flex;
   align-items: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+
+#navbar .brand {
+  font-weight: 600;
+  font-size: 1.1em;
+
 
 #navbar .brand {
   font-weight: bold;
@@ -147,6 +169,7 @@ body {
 
 #navbar .brand {
   font-weight: bold;
+
 }
 
 #navbar .spacer {
@@ -159,24 +182,31 @@ body {
 
 #addTripBtn {
   position: fixed;
-  bottom: 20px;
+
+  bottom: 70px;
+
   right: 20px;
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: #3388ff;
+
+  background: var(--primary);
   color: #fff;
-  font-size: 24px;
+  font-size: 28px;
+
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+
+  transition: background 0.2s;
 }
 
 #addTripBtn.active {
-  background: #1d6fe0;
+  background: var(--primary-hover);
+
 }
 
 @media (max-width: 600px) {
@@ -197,29 +227,42 @@ body {
   right: 0;
   bottom: 0;
   background: rgba(0,0,0,0.5);
-  display: flex;
+
+  display: none;
   align-items: center;
   justify-content: center;
+  backdrop-filter: blur(2px);
+}
+
+#dateModal:not(.hidden) {
+  display: flex;
 }
 
 #dateModal .modal-content {
-  background: #fff;
+  background: var(--surface);
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  width: 260px;
+
 }
 
 #dateModal .modal-actions {
   margin-top: 10px;
   text-align: right;
+
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
 }
 
 #dateModal .modal-actions button {
-  margin-left: 5px;
+  margin-left: 0;
 }
 
 #footer {
-  background: #3388ff;
+  background: var(--primary);
+
   color: #fff;
   text-align: center;
   padding: 10px;

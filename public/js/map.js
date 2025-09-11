@@ -49,6 +49,7 @@ function updateAuthUI() {
     mapDiv.classList.remove('hidden');
     addTripBtn.classList.remove('hidden');
     usernameSpan.textContent = username;
+    dateModal.classList.add('hidden');
     if (!map) {
       initMap();
     }
@@ -63,6 +64,10 @@ function updateAuthUI() {
     addingMode = false;
     addTripBtn.classList.remove('active');
     addTripBtn.textContent = '+';
+    if (dateModal) {
+      dateModal.classList.add('hidden');
+    }
+
   }
 }
 
@@ -105,27 +110,6 @@ function onCountryClick(e) {
   pendingCode = code;
   visitDateInput.value = '';
   dateModal.classList.remove('hidden');
-
-  const date = prompt('Fecha de visita (YYYY-MM-DD):');
-  if (!date) return;
-  fetch('/api/trips', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    },
-    body: JSON.stringify({ country_code: code, visited_at: date })
-  }).then(res => {
-    if (res.ok) {
-      visited.set(code, date);
-      colorVisited();
-      addingMode = false;
-      addTripBtn.classList.remove('active');
-      addTripBtn.textContent = '+';
-    } else if (res.status === 401) {
-      alert('Sesión inválida');
-    }
-  });
 
 }
 
