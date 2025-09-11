@@ -10,12 +10,22 @@ function hashPassword(password) {
 }
 
 async function register(username, password) {
+  if (!username || !password) {
+    throw new Error('Missing credentials');
+  }
+  const existing = await User.findOne({ where: { username } });
+  if (existing) {
+    throw new Error('User already exists');
+  }
   const password_hash = hashPassword(password);
   const user = await User.create({ username, password_hash });
   return { id: user.id, username: user.username };
 }
 
 async function login(username, password) {
+  if (!username || !password) {
+    throw new Error('Missing credentials');
+  }
   const user = await User.findOne({ where: { username } });
   if (!user) {
     throw new Error('Invalid credentials');

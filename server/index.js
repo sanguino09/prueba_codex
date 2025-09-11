@@ -9,6 +9,9 @@ app.use(express.static('public'));
 
 app.post('/api/register', async (req, res) => {
   const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Faltan datos' });
+  }
   try {
     const user = await register(username, password);
     res.status(201).json(user);
@@ -19,6 +22,9 @@ app.post('/api/register', async (req, res) => {
 
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Faltan datos' });
+  }
   try {
     const token = await login(username, password);
     res.json({ token });
