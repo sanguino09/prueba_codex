@@ -2,6 +2,12 @@ html, body {
   height: 100%;
 }
 
+/* Ensure padding and borders are included in element widths to avoid
+   unwanted overflow that can push content off-screen on narrow viewports. */
+* {
+  box-sizing: border-box;
+}
+
 :root {
   --primary: #2563eb;
   --primary-hover: #1e4db7;
@@ -222,6 +228,7 @@ body.allow-scroll {
   align-items: center;
   justify-content: center;
   backdrop-filter: blur(2px);
+  z-index: 2000; /* Keep modal above navigation and floating buttons */
 }
 
 #dateModal:not(.hidden) {
