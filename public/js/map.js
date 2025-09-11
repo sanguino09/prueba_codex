@@ -9,6 +9,8 @@ let visitDateInput;
 let saveDateBtn;
 let cancelDateBtn;
 let pendingCode = null;
+let menuBtn;
+let menuDropdown;
 
 function getToken() {
   return localStorage.getItem('token');
@@ -50,6 +52,7 @@ function updateAuthUI() {
     addTripBtn.classList.remove('hidden');
     usernameSpan.textContent = username;
     dateModal.classList.add('hidden');
+    document.getElementById('menuDropdown').classList.add('hidden');
     if (!map) {
       initMap();
     }
@@ -63,7 +66,8 @@ function updateAuthUI() {
     usernameSpan.textContent = '';
     addingMode = false;
     addTripBtn.classList.remove('active');
-    addTripBtn.textContent = '+';
+    addTripBtn.innerHTML = '<span class="material-icons">add</span>';
+    document.getElementById('menuDropdown').classList.add('hidden');
     if (dateModal) {
       dateModal.classList.add('hidden');
     }
@@ -95,34 +99,45 @@ function initMap() {
 }
 
 function onCountryClick(e) {
-  if (!addingMode) return;
-  const code = e.target.feature.properties.ISO_A3;
-  const token = getToken();
-  if (!token) {
-    alert('Debes iniciar sesión');
-    return;
-  }
-  if (visited.has(code)) {
-    alert(`Ya visitado el ${visited.get(code)}`);
-    return;
-  }
+  const layer = e.target;
+  const code = layer.feature.properties.ISO_A3;
+  const name = layer.feature.properties.ADMIN;
+  if (addingMode) {
+    const token = getToken();
+    if (!token) {
+      alert('Debes iniciar sesión');
+      return;
+    }
+    if (visited.has(code)) {
+      alert(`Ya visitado el ${visited.get(code)}`);
+      return;
+    }
 
-  pendingCode = code;
-  visitDateInput.value = '';
-  dateModal.classList.remove('hidden');
-
+    pendingCode = code;
+    visitDateInput.value = '';
+    dateModal.classList.remove('hidden');
+  } else {
+    let content = `<strong>${name}</strong>`;
+    if (visited.has(code)) {
+      content += `<br/>Visitado el ${visited.get(code)}`;
+    } else {
+      content += '<br/>No visitado';
+    }
+    layer.bindPopup(content).openPopup();
+  }
 }
 
 function colorVisited() {
   if (!geojsonLayer) return;
   geojsonLayer.eachLayer(layer => {
     const code = layer.feature.properties.ISO_A3;
+    const name = layer.feature.properties.ADMIN;
     if (visited.has(code)) {
       layer.setStyle({ fillColor: '#3388ff', fillOpacity: 0.5 });
-      layer.bindTooltip(visited.get(code));
+      layer.bindTooltip(`<strong>${name}</strong><br/>${visited.get(code)}`);
     } else {
       layer.setStyle({ fillOpacity: 0 });
-      layer.unbindTooltip();
+      layer.bindTooltip(`<strong>${name}</strong><br/>No visitado`);
     }
   });
 }
@@ -151,10 +166,14 @@ function loadTrips() {
 function setupForms() {
   const regForm = document.getElementById('registerForm');
   const logForm = document.getElementById('loginForm');
-  const logoutBtn = document.getElementById('logoutBtn');
   const loginToggle = document.getElementById('loginToggle');
   const registerToggle = document.getElementById('registerToggle');
   addTripBtn = document.getElementById('addTripBtn');
+  menuBtn = document.getElementById('menuBtn');
+  menuDropdown = document.getElementById('menuDropdown');
+  const logoutOption = document.getElementById('logoutOption');
+  const settingsOption = document.getElementById('settingsOption');
+  const helpOption = document.getElementById('helpOption');
 
   dateModal = document.getElementById('dateModal');
   visitDateInput = document.getElementById('visitDate');
@@ -165,10 +184,41 @@ function setupForms() {
   addTripBtn.addEventListener('click', () => {
     addingMode = !addingMode;
     addTripBtn.classList.toggle('active', addingMode);
-    addTripBtn.textContent = addingMode ? '×' : '+';
+    addTripBtn.innerHTML = addingMode ? '<span class="material-icons">close</span>' : '<span class="material-icons">add</span>';
 
     colorVisited();
   });
+
+  menuBtn.addEventListener('click', () => {
+    menuDropdown.classList.toggle('hidden');
+  });
+
+  document.addEventListener('click', e => {
+    if (!menuDropdown.contains(e.target) && !menuBtn.contains(e.target)) {
+      menuDropdown.classList.add('hidden');
+    }
+  });
+
+  logoutOption.addEventListener('click', () => {
+    menuDropdown.classList.add('hidden');
+    localStorage.removeItem('token');
+    visited.clear();
+    colorVisited();
+    showMessage('Sesión cerrada');
+    updateAuthUI();
+  });
+
+
+  settingsOption.addEventListener('click', () => {
+    menuDropdown.classList.add('hidden');
+    showMessage('Ajustes no disponibles', true);
+  });
+
+  helpOption.addEventListener('click', () => {
+    menuDropdown.classList.add('hidden');
+    showMessage('Pulsa "+" para registrar un viaje y selecciona un país');
+  });
+
 
   saveDateBtn.addEventListener('click', async () => {
     const date = visitDateInput.value;
@@ -192,7 +242,7 @@ function setupForms() {
         colorVisited();
         addingMode = false;
         addTripBtn.classList.remove('active');
-        addTripBtn.textContent = '+';
+        addTripBtn.innerHTML = '<span class="material-icons">add</span>';
       } else if (res.status === 401) {
 
         showMessage('Sesión inválida', true);
@@ -268,13 +318,6 @@ function setupForms() {
     }
   });
 
-  logoutBtn.addEventListener('click', () => {
-    localStorage.removeItem('token');
-    visited.clear();
-    colorVisited();
-    showMessage('Sesión cerrada');
-    updateAuthUI();
-  });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
