@@ -1,9 +1,18 @@
 const { Sequelize, DataTypes } = require('sequelize');
+const path = require('path');
 
-// Initialize Sequelize with SQLite
+// Initialize Sequelize with SQLite. Allow the database location to be
+// configured via an environment variable so that deployments on
+// platforms with read-only filesystems (e.g. Vercel) can store the
+// SQLite file in a writable directory like `/tmp`.
+const defaultStorage =
+  process.env.NODE_ENV === 'production'
+    ? '/tmp/database.sqlite'
+    : path.join(__dirname, '..', 'database.sqlite');
+
 const sequelize = new Sequelize({
   dialect: 'sqlite',
-  storage: 'database.sqlite',
+  storage: process.env.DATABASE_PATH || defaultStorage,
   logging: false,
 });
 
