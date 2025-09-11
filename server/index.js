@@ -5,7 +5,6 @@ const { register, login, verifyToken } = require('./auth');
 
 const app = express();
 app.use(express.json());
-app.use(express.static('public'));
 
 app.post('/api/register', async (req, res) => {
   const { username, password } = req.body;
@@ -55,6 +54,9 @@ app.get('/api/trips', verifyToken, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// Serve static files after API routes so they don't override /api paths
+app.use(express.static('public'));
 
 const PORT = process.env.PORT || 3000;
 sequelize.sync().then(() => {
