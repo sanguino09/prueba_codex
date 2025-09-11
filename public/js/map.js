@@ -208,6 +208,7 @@ function setupForms() {
     updateAuthUI();
   });
 
+
   settingsOption.addEventListener('click', () => {
     menuDropdown.classList.add('hidden');
     showMessage('Ajustes no disponibles', true);
@@ -215,8 +216,10 @@ function setupForms() {
 
   helpOption.addEventListener('click', () => {
     menuDropdown.classList.add('hidden');
+
     window.location.href = 'help.html';
   });
+
 
   saveDateBtn.addEventListener('click', async () => {
     const date = visitDateInput.value;
@@ -242,7 +245,9 @@ function setupForms() {
         addTripBtn.classList.remove('active');
         addTripBtn.innerHTML = '<span class="material-icons">add</span>';
       } else if (res.status === 401) {
+
         showMessage('Sesión inválida', true);
+
         localStorage.removeItem('token');
         updateAuthUI();
       } else {
