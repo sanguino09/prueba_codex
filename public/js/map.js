@@ -111,7 +111,6 @@ function onCountryClick(e) {
       addingMode = false;
       addTripBtn.classList.remove('active');
       addTripBtn.textContent = '+';
-      loadTrips();
     } else if (res.status === 401) {
       alert('Sesión inválida');
     }
@@ -157,6 +156,7 @@ function setupForms() {
     addingMode = !addingMode;
     addTripBtn.classList.toggle('active', addingMode);
     addTripBtn.textContent = addingMode ? '×' : '+';
+
   });
 
   loginToggle.addEventListener('click', () => {
