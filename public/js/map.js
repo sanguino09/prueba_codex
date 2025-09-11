@@ -216,7 +216,8 @@ function setupForms() {
 
   helpOption.addEventListener('click', () => {
     menuDropdown.classList.add('hidden');
-    showMessage('Pulsa "+" para registrar un viaje y selecciona un país');
+
+    window.location.href = 'help.html';
   });
 
 
