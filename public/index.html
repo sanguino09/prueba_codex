@@ -39,6 +39,20 @@
   <div id="map" class="hidden"></div>
   <button id="addTripBtn" class="hidden">+</button>
 
+  <div id="dateModal" class="hidden">
+    <div class="modal-content">
+      <h2>Fecha de visita</h2>
+      <input type="date" id="visitDate" />
+      <div class="modal-actions">
+        <button id="saveDateBtn">Guardar</button>
+        <button id="cancelDateBtn">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <footer id="footer">Pulsa "+" para registrar un viaje y selecciona el país visitado</footer>
+
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <script src="js/map.js"></script>

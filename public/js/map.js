@@ -4,6 +4,12 @@ let visited = new Map();
 let addingMode = false;
 let addTripBtn;
 
+let dateModal;
+let visitDateInput;
+let saveDateBtn;
+let cancelDateBtn;
+let pendingCode = null;
+
 function getToken() {
   return localStorage.getItem('token');
 }
@@ -95,6 +101,11 @@ function onCountryClick(e) {
     alert(`Ya visitado el ${visited.get(code)}`);
     return;
   }
+
+  pendingCode = code;
+  visitDateInput.value = '';
+  dateModal.classList.remove('hidden');
+
   const date = prompt('Fecha de visita (YYYY-MM-DD):');
   if (!date) return;
   fetch('/api/trips', {
@@ -115,6 +126,7 @@ function onCountryClick(e) {
       alert('Sesión inválida');
     }
   });
+
 }
 
 function colorVisited() {
@@ -152,10 +164,56 @@ function setupForms() {
   const registerToggle = document.getElementById('registerToggle');
   addTripBtn = document.getElementById('addTripBtn');
 
+  dateModal = document.getElementById('dateModal');
+  visitDateInput = document.getElementById('visitDate');
+  saveDateBtn = document.getElementById('saveDateBtn');
+  cancelDateBtn = document.getElementById('cancelDateBtn');
+
+
   addTripBtn.addEventListener('click', () => {
     addingMode = !addingMode;
     addTripBtn.classList.toggle('active', addingMode);
     addTripBtn.textContent = addingMode ? '×' : '+';
+
+    colorVisited();
+  });
+
+  saveDateBtn.addEventListener('click', () => {
+    const date = visitDateInput.value;
+    if (!pendingCode || !date) {
+      dateModal.classList.add('hidden');
+      pendingCode = null;
+      return;
+    }
+    const token = getToken();
+    fetch('/api/trips', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ country_code: pendingCode, visited_at: date })
+    }).then(res => {
+      if (res.ok) {
+        visited.set(pendingCode, date);
+        colorVisited();
+        addingMode = false;
+        addTripBtn.classList.remove('active');
+        addTripBtn.textContent = '+';
+      } else if (res.status === 401) {
+        alert('Sesión inválida');
+      } else {
+        alert('Error al guardar');
+      }
+    }).finally(() => {
+      dateModal.classList.add('hidden');
+      pendingCode = null;
+    });
+  });
+
+  cancelDateBtn.addEventListener('click', () => {
+    dateModal.classList.add('hidden');
+    pendingCode = null;
 
   });
 
