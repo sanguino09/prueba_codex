@@ -156,7 +156,7 @@ function setupForms() {
     addingMode = !addingMode;
     addTripBtn.classList.toggle('active', addingMode);
     addTripBtn.textContent = addingMode ? '×' : '+';
-    colorVisited();
+
   });
 
   loginToggle.addEventListener('click', () => {
