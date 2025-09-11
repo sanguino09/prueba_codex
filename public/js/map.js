@@ -42,9 +42,11 @@ function updateAuthUI() {
     usernameSpan.textContent = username;
     if (!map) {
       initMap();
-    } else {
-      map.invalidateSize();
     }
+    // Leaflet needs a size recalculation after the map container becomes
+    // visible; delaying the call ensures the browser has rendered the
+    // element before Leaflet measures it.
+    setTimeout(() => map.invalidateSize(), 0);
     loadTrips();
   } else {
     authContainer.classList.remove('hidden');
@@ -55,7 +57,9 @@ function updateAuthUI() {
 }
 
 function initMap() {
-  map = L.map('map');
+  // Set a default view so the map is visible even if the GeoJSON data fails
+  // to load for some reason.
+  map = L.map('map').setView([20, 0], 2);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
